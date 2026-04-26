@@ -1,5 +1,8 @@
 """
 This module contains functions for exploring the dataset, such as visualizations and summary statistics.
+
+Last updated: 2026-04-25
+By: Marcus Chan
 """
 import pandas as pd
 import matplotlib.pyplot as plt
