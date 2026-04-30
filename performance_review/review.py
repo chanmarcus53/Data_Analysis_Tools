@@ -141,3 +141,12 @@ def model_review_narrow(model, X, y):
         'rmse': rmse,
         'feedback': feedback
     }
+
+def cross_validate_model(model, X_data, y_data, cv=5):
+    scores = cross_val_score(model, X_data, y_data, cv=cv, scoring='accuracy')
+    return scores.mean()
+
+def calculate_feature_importance(model, feature_names):
+    importance = model.feature_importances_
+    feature_importance = pd.DataFrame({'feature': feature_names, 'importance': importance})
+    return feature_importance.sort_values(by='importance', ascending=False)

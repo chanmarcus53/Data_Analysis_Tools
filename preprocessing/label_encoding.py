@@ -2,7 +2,7 @@
 This file contain functions for encoding categorical variables in the dataset 
 such as one-hot encoding and label encoding.
 
-Last updated: 2026-04-25
+Last updated: 2026-04-27
 By: Marcus Chan
 """
 

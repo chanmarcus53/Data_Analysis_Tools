@@ -6,6 +6,7 @@ By: Marcus Chan
 
 import unittest
 import pandas as pd
+import matplotlib.pyplot as plt
 from preprocessing.exploration import show_feature_types_and_missing_values
 from preprocessing.exploration import plot_target_distribution
 from preprocessing.exploration import plot_correlation_heatmap
@@ -75,6 +76,9 @@ class TestExplorationFunctions(unittest.TestCase):
         # This test will check if the function runs without errors
         try:
             plot_target_distribution(self.data, 'B')
+            # We can also check if the plot is created, but since we are not displaying it in a test environment, 
+            # we will just check for exceptions
+            self.assertIsNotNone(plt.gcf())
         except Exception as e:
             self.fail(f"plot_target_distribution raised an exception: {e}")
 
@@ -92,6 +96,9 @@ class TestExplorationFunctions(unittest.TestCase):
         # This test will check if the function runs without errors
         try:
             plot_correlation_heatmap(self.data)
+            # We can also check if the plot is created, but since we are not displaying it in a test environment, 
+            # we will just check for exceptions
+            self.assertIsNotNone(plt.gcf())
         except Exception as e:
             self.fail(f"plot_correlation_heatmap raised an exception: {e}")
 
@@ -109,6 +116,9 @@ class TestExplorationFunctions(unittest.TestCase):
         # This test will check if the function runs without errors
         try:
             plot_feature_distributions(self.data)
+            # We can also check if the plot is created, but since we are not displaying it in a test environment, 
+            # we will just check for exceptions
+            self.assertIsNotNone(plt.gcf())
         except Exception as e:
             self.fail(f"plot_feature_distributions raised an exception: {e}")
 
