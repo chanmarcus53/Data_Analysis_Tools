@@ -11,7 +11,7 @@ By: Marcus Chan
 
 import pandas as pd
 from pathlib import Path
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import requests
 from toolbox.logger import get_logger
 
@@ -57,24 +57,72 @@ def _load_file(path, **kwargs):
     return reader(path, **kwargs)
 
 
-def _load_sql(connection, query, **kwargs):
+def _load_sql(connection, query, params=None, chunksize=None, **kwargs):
     """
-    Execute a SQL query against a connection and return results.
-    hint: look into pd.read_sql() and SQLAlchemy engine strings
+    Execute a SQL query against a connection and return results as a DataFrame.
+    
+    Args:
+        connection: SQLAlchemy connection string
+        query:      SQL query string, use :param_name style placeholders
+        params:     dict of query parameters e.g. {"user_id": 42, "status": "active"}
+        chunksize:  if set, fetches in chunks and concatenates — useful for large results
+    
+    Example:
+        _load_sql(conn, "SELECT * FROM users WHERE id = :user_id", params={"user_id": 42})
     """
+    SUPPORTED_DIALECTS = [
+        "postgresql", "mysql", "sqlite", "mssql",
+        "mysql+pymysql", "mssql+pyodbc",
+        "postgresql+psycopg2", "sqlite+pysqlite", "oracle+cx_oracle"
+    ]
+
     database_index = connection.lower().find("://")
     if database_index == -1:
-        raise ValueError("Invalid SQL connection string. Unable to determine database type")
+        raise ValueError("Invalid connection string: missing '://'")
     elif database_index < 5:
-        raise ValueError("Invalid SQL connection string. Database type appears too short to be valid")
-    else:
-        database_type = connection[:database_index].lower()
-        if database_type not in ["postgresql", "mysql", "sqlite", "mssql", "mysql+pymysql", "mssql+pyodbc", 
-                                 "postgresql+psycopg2", "sqlite+pysqlite", "oracle+cx_oracle"]:
-            raise ValueError(f"Unsupported database type: {database_type}. Supported types are: postgresql, mysql, sqlite, mssql")
-    
+        raise ValueError("Invalid connection string: database type too short")
+
+    database_type = connection[:database_index].lower()
+    if database_type not in SUPPORTED_DIALECTS:
+        raise ValueError(
+            f"Unsupported database type: '{database_type}'. "
+            f"Supported types: {', '.join(SUPPORTED_DIALECTS)}"
+        )
+
     engine = create_engine(connection)
-    return pd.read_sql(query, con=engine, **kwargs)
+
+    # wrap query in SQLAlchemy's text() to enable safe parameter binding
+    # this prevents SQL injection by never interpolating params as raw strings
+    safe_query = text(query)
+
+    try:
+        with engine.connect() as conn:
+            if chunksize:
+                logger.info(f"Loading in chunks of {chunksize} rows")
+                chunks = pd.read_sql(
+                    safe_query,
+                    con=conn,
+                    params=params or {},
+                    chunksize=chunksize
+                )
+                df = pd.concat(
+                    (chunk for chunk in chunks),
+                    ignore_index=True
+                )
+                logger.info(f"Chunks concatenated: {len(df)} total rows")
+            else:
+                df = pd.read_sql(
+                    safe_query,
+                    con=conn,
+                    params=params or {}
+                )
+
+            logger.info(f"SQL query returned {len(df)} rows, {len(df.columns)} columns")
+            return df
+
+    except Exception as e:
+        logger.warning(f"SQL load failed: {e}")
+        raise
 
 
 def _find_records(data):
@@ -98,25 +146,109 @@ def _find_records(data):
     )
     return None
 
-def _load_api(url, params=None, headers=None, **kwargs):
+def _paginate_offset(url, params=None, headers=None):
     """
-    Fetch JSON data from a REST endpoint and return as a DataFrame.
-    hint: look into the requests library and how to handle pagination
+    Keeps fetching pages until the API returns an empty list.
     """
-    response = requests.get(url, params=params, headers=headers)
-    response.raise_for_status()
+    params = params or {}
+    all_records = []
+    page = 1
 
-    data = response.json()
+    while True:
+        params["page"] = page
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
 
-    if isinstance(data, list):
-        records = data
-    elif isinstance(data, dict):
-        records = _find_records(data)
+        data = response.json()
+        records = data if isinstance(data, list) else _find_records(data)
+
+        if not records:
+            logger.info(f"Pagination complete. Total records fetched: {len(all_records)}")
+            break
+
+        logger.info(f"Fetched page {page} — {len(records)} records")
+        all_records.extend(records)
+        page += 1
+
+    return all_records
+
+def _paginate_cursor(url, params=None, headers=None):
+    """
+    Follows cursor tokens until the API signals there are no more pages.
+    """
+    params = params or {}
+    all_records = []
+
+    while True:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        records = data if isinstance(data, list) else _find_records(data)
+        if records:
+            all_records.extend(records)
+
+        # TODO: every API names this differently — "next_cursor", "cursor",
+        # "next_token" are common. How would you make this configurable
+        # so the caller can tell your function what key to look for?
+        next_cursor = data.get("next_cursor")
+
+        if not next_cursor:
+            logger.info(f"Cursor pagination complete. Total records: {len(all_records)}")
+            break
+
+        logger.info(f"Following cursor: {next_cursor}")
+        params["cursor"] = next_cursor
+
+    return all_records
+
+def _paginate_link_header(url, params=None, headers=None):
+    """
+    Follows 'Link' headers until there is no 'next' relation.
+    GitHub's API is a good real-world example of this pattern.
+    """
+    all_records = []
+
+    while url:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+
+        data = response.json()
+        records = data if isinstance(data, list) else _find_records(data)
+        if records:
+            all_records.extend(records)
+
+        # TODO: research the 'Link' header format — it looks like:
+        # <https://api.example.com/data?page=2>; rel="next"
+        # how would you parse the next URL out of that string?
+        # hint: look into the 'requests' library's link parsing,
+        # or the 'parse_header_links' utility
+        url = None  # replace this with real next URL extraction
+
+    logger.info(f"Link header pagination complete. Total records: {len(all_records)}")
+    return all_records
+
+def _load_api(url, params=None, headers=None, pagination=None, **kwargs):
+    """
+    pagination options: None, "offset", "cursor", "link"
+    """
+ 
+    if pagination == "offset":
+        records = _paginate_offset(url, params, headers)
+    elif pagination == "cursor":
+        records = _paginate_cursor(url, params, headers)
+    elif pagination == "link":
+        records = _paginate_link_header(url, params, headers)
+    elif pagination is None:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        records = data if isinstance(data, list) else _find_records(data)
         if records is None:
             logger.warning("Returning empty DataFrame due to unresolved response structure.")
             return pd.DataFrame()
     else:
-        raise ValueError(f"Unexpected response type: {type(data)}")
+        raise ValueError(f"Unsupported pagination type: {pagination}")
 
     return pd.DataFrame(records)
 
