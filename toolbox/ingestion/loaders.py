@@ -146,7 +146,7 @@ def _find_records(data):
     )
     return None
 
-def _paginate_offset(url, params=None, headers=None):
+def _paginate_offset(url, params=None, headers=None, max_pages=50):
     """
     Keeps fetching pages until the API returns an empty list.
     """
@@ -161,6 +161,7 @@ def _paginate_offset(url, params=None, headers=None):
 
         data = response.json()
         records = data if isinstance(data, list) else _find_records(data)
+        # TODO: need to include maximum page limit or timeout to prevent infinite loops in case of API issues
 
         if not records:
             logger.info(f"Pagination complete. Total records fetched: {len(all_records)}")
@@ -168,11 +169,16 @@ def _paginate_offset(url, params=None, headers=None):
 
         logger.info(f"Fetched page {page} — {len(records)} records")
         all_records.extend(records)
+
+        if page >= max_pages:
+            logger.warning(f"Reached maximum page limit of {max_pages}. Stopping pagination.")
+            break
+        
         page += 1
 
     return all_records
 
-def _paginate_cursor(url, params=None, headers=None):
+def _paginate_cursor(url, params=None, headers=None, cursor_key="next_cursor"):
     """
     Follows cursor tokens until the API signals there are no more pages.
     """
@@ -188,10 +194,7 @@ def _paginate_cursor(url, params=None, headers=None):
         if records:
             all_records.extend(records)
 
-        # TODO: every API names this differently — "next_cursor", "cursor",
-        # "next_token" are common. How would you make this configurable
-        # so the caller can tell your function what key to look for?
-        next_cursor = data.get("next_cursor")
+        next_cursor = data.get(cursor_key)
 
         if not next_cursor:
             logger.info(f"Cursor pagination complete. Total records: {len(all_records)}")
@@ -202,7 +205,7 @@ def _paginate_cursor(url, params=None, headers=None):
 
     return all_records
 
-def _paginate_link_header(url, params=None, headers=None):
+def _paginate_link_header(url, params=None, headers=None, max_pages=50):
     """
     Follows 'Link' headers until there is no 'next' relation.
     GitHub's API is a good real-world example of this pattern.
@@ -223,20 +226,38 @@ def _paginate_link_header(url, params=None, headers=None):
         # how would you parse the next URL out of that string?
         # hint: look into the 'requests' library's link parsing,
         # or the 'parse_header_links' utility
-        url = None  # replace this with real next URL extraction
+        next_url = None  # replace this with real next URL extraction
+        for link in response.links.values():
+            if link.get("rel") == "next":
+                next_url = link.get("url")
+                break
+        
+        if not next_url:
+            logger.info(f"Link pagination complete. Total records: {len(all_records)}")
+            break
 
-    logger.info(f"Link header pagination complete. Total records: {len(all_records)}")
+        if page >= max_pages:
+            logger.warning(f"Hit max_pages limit of {max_pages}. There may be more records.")
+            break
+
+        logger.info(f"Following link header to page {page + 1}")
+
+        # after the first request params are already baked into the next URL
+        params = None
+        url = next_url
+        page += 1
+        
     return all_records
 
-def _load_api(url, params=None, headers=None, pagination=None, **kwargs):
+def _load_api(url, params=None, headers=None, pagination=None, cursor_key="next_cursor", max_pages=50, **kwargs):
     """
     pagination options: None, "offset", "cursor", "link"
     """
  
     if pagination == "offset":
-        records = _paginate_offset(url, params, headers)
+        records = _paginate_offset(url, params, headers, max_pages=max_pages) 
     elif pagination == "cursor":
-        records = _paginate_cursor(url, params, headers)
+        records = _paginate_cursor(url, params, headers, cursor_key=cursor_key)
     elif pagination == "link":
         records = _paginate_link_header(url, params, headers)
     elif pagination is None:
