@@ -15,13 +15,29 @@ def profile(df):
 
 
 def _get_shape(df):
-    # TODO: return row and column count
-    raise NotImplementedError
+    """
+    Return the row count and columns count
+
+    Parameters:
+    - df : Pandas Dataframe
+
+    Returns:
+    - df.shape[0]: row count
+    - df.shape[1]: column count
+    """
+    return df.shape[0], df.shape[1]
 
 def _get_memory(df):
-    # TODO: return memory usage in MB, human readable
-    # hint: look into df.memory_usage()
-    raise NotImplementedError
+    """
+    Returns memory usage of the dataframe in megabytes
+
+    Parameters:
+    - df: Pandas Dataframe
+
+    Returns:
+    - memory: Floating point, 3 decimal places
+    """
+    return round(df.memory_usage(index=True, deep=True).sum()/1_000_000, 3)
 
 def _profile_columns(df):
     """
