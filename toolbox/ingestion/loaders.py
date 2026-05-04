@@ -26,6 +26,12 @@ def load(source, **kwargs):
     """
     Unified entry point. Detects source type and dispatches accordingly.
     Returns a pandas DataFrame.
+
+    Parameters:
+        - source: source of data, either as sql connection string, api url or file.
+
+    Reponses:
+        - Returns a dataframe based on data source.
     """
     if isinstance(source, str) and source.startswith("http"):
         return _load_api(source, **kwargs)
@@ -61,14 +67,17 @@ def _load_sql(connection, query, params=None, chunksize=None, **kwargs):
     """
     Execute a SQL query against a connection and return results as a DataFrame.
     
-    Args:
-        connection: SQLAlchemy connection string
-        query:      SQL query string, use :param_name style placeholders
-        params:     dict of query parameters e.g. {"user_id": 42, "status": "active"}
-        chunksize:  if set, fetches in chunks and concatenates — useful for large results
+    Paramerters:
+        - connection: SQLAlchemy connection string
+        - query:      SQL query string, use :param_name style placeholders
+        - params:     dict of query parameters e.g. {"user_id": 42, "status": "active"}
+        - chunksize:  if set, fetches in chunks and concatenates — useful for large results
     
     Example:
         _load_sql(conn, "SELECT * FROM users WHERE id = :user_id", params={"user_id": 42})
+
+    Reponses:
+        - pandas dataframe from queried data
     """
     SUPPORTED_DIALECTS = [
         "postgresql", "mysql", "sqlite", "mssql",
@@ -220,12 +229,7 @@ def _paginate_link_header(url, params=None, headers=None, max_pages=50):
         records = data if isinstance(data, list) else _find_records(data)
         if records:
             all_records.extend(records)
-
-        # TODO: research the 'Link' header format — it looks like:
-        # <https://api.example.com/data?page=2>; rel="next"
-        # how would you parse the next URL out of that string?
-        # hint: look into the 'requests' library's link parsing,
-        # or the 'parse_header_links' utility
+            
         next_url = None  # replace this with real next URL extraction
         for link in response.links.values():
             if link.get("rel") == "next":
@@ -279,4 +283,4 @@ def _is_sql_connection(source):
     Return True if source looks like a SQL connection string or SQLAlchemy engine.
     hint: what types or string patterns would indicate a DB connection?
     """
-    raise NotImplementedError
+    return isinstance(source, str) and "://" in source and not source.startswith("http")
