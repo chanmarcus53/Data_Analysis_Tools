@@ -29,7 +29,7 @@ def _get_shape(df):
     - df.shape[0]: row count
     - df.shape[1]: column count
     """
-    return df.shape[0], df.shape[1]
+    return [df.shape[0], df.shape[1]]
 
 def _get_memory(df):
     """
