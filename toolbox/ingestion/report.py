@@ -1,5 +1,6 @@
 import profiler as pf
 from toolbox.logger import get_logger
+import pandas as pd
 
 logger = get_logger(__name__)
 
@@ -134,7 +135,30 @@ def _export_html(profile_result, path="report.html"):
 
         logger.info(f"HTML report saved to {path}")
 
-def _export_excel(profile_result):
-    # TODO: write profile to Excel with one sheet per section
-    # hint: look into pd.ExcelWriter and openpyxl
-    raise NotImplementedError
+def _export_excel(profile_result, path="report.xlsx"):
+    col = profile_result["columns"]
+
+    overview_df = pd.DataFrame([{
+        "rows": profile_result["shape"][0],
+        "columns": profile_result["shape"][1],
+        "memory_mb": profile_result["memory"]
+    }])
+
+    warnings_df = pd.DataFrame(
+        profile_result["warnings"] if profile_result["warnings"] else ["No issues detected"],
+        columns="warnings"
+    )
+
+    numeric = {k: v for k, v in col.items() if "mean" in v}
+    categorical = {k: v for k, v in col.items() if "mean" not in v}
+
+    numeric_df = pd.DataFrame.from_dict(numeric, orient="index") if numeric else pd.DataFrame()
+    categorical_df = pd.DataFrame.from_dict(categorical, orient="index") if categorical else pd.DataFrame()
+
+    with pd.ExcelWriter(path, engine="openpyxl") as writer:
+        overview_df.to_excel(writer, sheet_name="Overview", index=False)
+        warnings_df.to_excel(writer, sheet_name="Warnings", index=False)
+        numeric_df.to_excel(writer, sheet_name="Numeric Columns")
+        categorical_df.to_excel(writer, sheet_name="Categorical Columns")
+
+    logger.info(f"Excel report saved to {path}")
