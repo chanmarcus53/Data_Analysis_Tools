@@ -123,6 +123,8 @@ def _detect_issues(df, column_profile):
 
     duplicate_count = int(df.duplicated().sum())
     if duplicate_count > 0:
-        msg = f"{duplicate_count} duplicated rows detected"
+        msg = f"{duplicate_count} duplicate rows detected"
         issue_list.append(msg)
         logger.warning(msg)
+
+    return issue_list

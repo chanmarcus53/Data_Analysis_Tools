@@ -170,7 +170,6 @@ def _paginate_offset(url, params=None, headers=None, max_pages=50):
 
         data = response.json()
         records = data if isinstance(data, list) else _find_records(data)
-        # TODO: need to include maximum page limit or timeout to prevent infinite loops in case of API issues
 
         if not records:
             logger.info(f"Pagination complete. Total records fetched: {len(all_records)}")
