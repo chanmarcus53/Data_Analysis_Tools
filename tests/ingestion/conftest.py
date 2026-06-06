@@ -78,3 +78,32 @@ def duplicate_df():
         "age": [25, 25, 30],
         "status": ["active", "active", "inactive"]
     })
+
+@pytest.fixture
+def profile_result():
+    return {
+        "shape": (3, 4),
+        "memory": 0.002,
+        "columns": {
+            "id": {
+                "dtype": "int64",
+                "count": 3,
+                "null_count": 0,
+                "null_pct": 0.0,
+                "mean": 2.0,
+                "std": 1.0,
+                "min": 1.0,
+                "max": 3.0,
+                "skewness": 0.0
+            },
+            "status": {
+                "dtype": "object",
+                "count": 3,
+                "null_count": 0,
+                "null_pct": 0.0,
+                "unique_count": 2,
+                "top_values": {"active": 2, "inactive": 1}
+            }
+        },
+        "warnings": ["Column 'id' has high null percentage: 60.0%"]
+    }
