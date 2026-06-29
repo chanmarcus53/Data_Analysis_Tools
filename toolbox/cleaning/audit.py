@@ -1,30 +1,55 @@
 from toolbox.logger import get_logger
+import pandas as pd
 
 logger = get_logger(__name__)
 
 class AuditTrail:
     def __init__(self):
-        # TODO: what data structure would you use to store the steps?
-        # hint: you'll be appending records over time
-        raise NotImplementedError
+        self.trail = []
 
     def log(self, step, column, details):
-        # TODO: record a transformation
-        # think about what information is useful to capture beyond
-        # just step, column and details
-        # hint: what else would you want to know when reviewing the trail?
-        raise NotImplementedError
+        record = {
+            "timestamp": pd.Timestamp.now(),
+            "step": step,
+            "column": column,
+            "details": details
+        }
+        self.trail.append(record)
+        logger.debug(f"Audit logged — {step} on '{column}': {details}")
 
     def summary(self):
-        # TODO: print a readable summary of all steps applied
-        # hint: follow the same pattern as _print_console in report.py
-        raise NotImplementedError
+        if not self.trail:
+            logger.info("Audit trail is empty — no transformations applied yet.")
+            return
+
+        print("----------- Audit Trail -------------------")
+        for i, record in enumerate(self.trail, 1):
+            print(f"{i}. [{record['timestamp']}] {record['step']} | {record['column']} | {record['details']}")
+        print(f"Total steps applied: {len(self.trail)}")
 
     def export(self, output="excel", path=None):
-        # TODO: save the audit trail to Excel or HTML
-        # hint: you already solved this problem in report.py
-        raise NotImplementedError
+        if path is None:
+            path = f"audit_trail.{output}"
+            logger.warning(f"No path provided, saving to {path}")
+
+        df = self.to_dataframe()
+
+        if output == "excel":
+            df.to_excel(path, index=False)
+            logger.info(f"Audit trail exported to {path}")
+        elif output == "html":
+            df.to_html(path, index=False)
+            logger.info(f"Audit trail exported to {path}")
+        else:
+            logger.error(f"Unsupported output format: {output}")
+            raise ValueError(f"Unsupported output format: {output}")
+
+    def to_dataframe(self):
+        return pd.DataFrame(self.trail)
 
     def clear(self):
-        # TODO: reset the trail
-        raise NotImplementedError
+        self.trail = []
+        logger.debug("Audit trail cleared")
+
+    def __len__(self):
+        return len(self.trail)
