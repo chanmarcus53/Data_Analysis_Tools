@@ -93,20 +93,36 @@ class TestExport:
 
 class TestClear:
     def test_clear_empties_trail(self, audit_trail):
-        raise NotImplementedError
+        audit_trail.log("handle_missing", "age", "test details")
+        audit_trail.log("handle_outliers", "age", "second_entry")
+        audit_trail.clear()
+        assert audit_trail.trail == []
 
     def test_clear_on_empty_trail(self, audit_trail):
-        raise NotImplementedError
+        audit_trail.clear()
+        assert audit_trail.trail == []
 
 class TestHelpers:
     def test_len_empty(self, audit_trail):
-        raise NotImplementedError
+        assert len(audit_trail) == 0
 
     def test_len_after_logging(self, audit_trail):
-        raise NotImplementedError
+        audit_trail.log("handle_missing", "age", "test details")
+        audit_trail.log("handle_outliers", "age", "second_entry")
+        assert len(audit_trail) == 2
 
     def test_to_dataframe_returns_dataframe(self, audit_trail):
-        raise NotImplementedError
+        audit_trail.log("handle_missing", "age", "test details")
+        assert isinstance(audit_trail.to_dataframe(), pd.DataFrame)
 
     def test_to_dataframe_has_correct_columns(self, audit_trail):
-        raise NotImplementedError
+        audit_trail.log("handle_missing", "age", "test")
+        df = audit_trail.to_dataframe()
+        assert "step" in df.columns
+        assert "column" in df.columns
+        assert "details" in df.columns
+        assert "timestamp" in df.columns
+
+    def test_to_dataframe_empty(self, audit_trail):
+        df = audit_trail.to_dataframe()
+        assert len(df) == 0
