@@ -3,12 +3,11 @@ import pytest
 import pandas as pd
 
 class TestGetShape:
-    def test_get_shape(self):
-        assert _get_shape([[1,2,3], [4,5,6]]) == (2, 3)
+    def test_get_shape(self, clean_df):
+        assert _get_shape(clean_df) == [3, 4]
 
 class TestGetMemory:
-    def test_get_memory(self):
-        def test_get_memory(self, clean_df):
+    def test_get_memory(self,  clean_df):
         result = _get_memory(clean_df)
         assert isinstance(result, float)
         assert result > 0  # don't assert exact bytes, it varies by system
@@ -76,7 +75,7 @@ class TestProfile:
 
     def test_profile_shape_matches_df(self, clean_df):
         result = profile(clean_df)
-        assert result["shape"] == (3, 4)
+        assert result["shape"] == [3, 4]
 
     def test_profile_warnings_is_list(self, clean_df):
         result = profile(clean_df)

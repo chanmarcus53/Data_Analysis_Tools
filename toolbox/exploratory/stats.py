@@ -43,5 +43,5 @@ def _value_counts(df):
 
 def _percentiles(df):
     percentiles = [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
-    result = df.quantile(percentiles, numeric_only=True).transpose()
+    result = df.quantile(percentiles, numeric_only=True)
     return result.to_dict()

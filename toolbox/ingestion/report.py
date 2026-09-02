@@ -1,4 +1,4 @@
-import profiler as pf
+import toolbox.ingestion.profiler as pf
 from toolbox.logger import get_logger
 import pandas as pd
 
@@ -29,8 +29,8 @@ def _print_console(profile_result):
     # TODO: print a readable summary — think about what a person
     # actually needs to see first when they load a new dataset
     print("----------- Ingestion Summary -------------------")
-    print(f" Memory: {profile_result["memory"]}MB Ingested ")
-    print(f" Data Shape: {profile_result["shape"][0]} X {profile_result['shape'][1]}")
+    print(f" Memory: {profile_result['memory']}MB Ingested ")
+    print(f" Data Shape: {profile_result['shape'][0]} X {profile_result['shape'][1]}")
 
     if profile_result["warnings"]:
         print("⚠ Warnings:")
@@ -146,7 +146,7 @@ def _export_excel(profile_result, path="report.xlsx"):
 
     warnings_df = pd.DataFrame(
         profile_result["warnings"] if profile_result["warnings"] else ["No issues detected"],
-        columns="warnings"
+        columns=["warnings"]
     )
 
     numeric = {k: v for k, v in col.items() if "mean" in v}

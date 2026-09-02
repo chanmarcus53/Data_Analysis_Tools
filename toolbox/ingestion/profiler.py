@@ -53,10 +53,10 @@ def _profile_columns(df):
     categorical_df = df.select_dtypes(include=['object', 'category'])
     
     return_dict = {}
-    for col_name in numeric_df.columns():
+    for col_name in numeric_df.columns:
         return_dict[col_name] = _profile_numeric(numeric_df[col_name])
 
-    for col_name in categorical_df.columns():
+    for col_name in categorical_df.columns:
         return_dict[col_name] = _profile_categorical(categorical_df[col_name])
 
     logger.debug(f"Profiled {len(df.columns)} columns")

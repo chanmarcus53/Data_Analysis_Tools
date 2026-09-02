@@ -86,8 +86,8 @@ class TestLoadApi:
 
     @patch("toolbox.ingestion.loaders.requests.get")
     def test_failed_request_raises(self, mock_get):
-        mock_reponse = MagicMock()
-        mock_reponse.raise_for_status.side_effect = Exception("API error")
+        mock_response = MagicMock()
+        mock_response.raise_for_status.side_effect = Exception("API error")
         mock_get.return_value = mock_response
 
         with pytest.raises(HTTPError):

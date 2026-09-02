@@ -38,7 +38,7 @@ def _detect(df, column, method, **kwargs):
 
     elif method == "zscore":
         threshold = kwargs.get("threshold", 3)
-        z_scores = df[column].copy()
+        z_scores = df[column].astype(float).copy()
         z_scores[df[column].notna()] = stats.zscore(df[column].dropna())
         return z_scores.abs() > threshold
 
