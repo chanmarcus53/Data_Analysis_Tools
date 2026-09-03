@@ -12,7 +12,7 @@ class TestLog:
         record = audit_trail.trail[0]
         assert record["step"] == "handle_missing"
         assert record["column"] == "age"
-        assert record["details"] == "imputed 3 nulls with median value 30.0"
+        assert record["details"] == "Imputed 3 nulls with median value 30.0"
 
     def test_log_captures_timestamp(self, audit_trail):
         audit_trail.log("handle_missing", "age", "test")
@@ -68,13 +68,13 @@ class TestExport:
         audit_trail.log("handle_missing", "age", "test_details")
         path = str(tmp_path / "audit.html")
         audit_trail.export(output="html", path=path)
-        df = pd.read_excel(path)
+        df = pd.read_html(path)[0] # this return a list of Dataframes, we want the first one
         assert df["step"].iloc[0] == "handle_missing"
         assert df["column"].iloc[0] == "age"
 
     def test_export_html_file_exists(self, audit_trail, tmp_path):
         audit_trail.log("handle_missing", "age", "test_details")
-        path = str(tmp_path / "audit_html")
+        path = str(tmp_path / "audit.html")
         audit_trail.export(output="html", path=path)
         assert (tmp_path / "audit.html").exists()
 

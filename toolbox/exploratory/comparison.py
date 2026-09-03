@@ -136,7 +136,7 @@ def _test_significance(*groups, group_names=None):
     else:
         raise ValueError("At least 2 groups are required for significance testing")
 
-    significant = p_value < 0.05
+    significant = bool(p_value < 0.05)
 
     # TODO: write a plain English interpretation for each test type
     # hint: mention the test used, number of groups, p_value, and whether significant
@@ -189,6 +189,6 @@ def _check_normality(series):
     else:
         _, p_value = stats.normaltest(series)
 
-    is_normal = p_value > 0.05
+    is_normal = bool(p_value > 0.05)
     logger.debug(f"Normality test: p={p_value:.4f}, normal={is_normal}")
     return is_normal

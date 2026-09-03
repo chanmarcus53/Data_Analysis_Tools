@@ -8,4 +8,4 @@ By: Marcus Chan
 from .loaders import load
 from .validator import validate
 from .profiler import profile
-from .report import report
+from .report import generate_report

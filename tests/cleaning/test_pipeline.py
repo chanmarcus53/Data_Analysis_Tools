@@ -70,13 +70,13 @@ class TestRun:
         pipeline = Pipeline(steps=sample_pipeline_steps)
         pipeline.run(null_df)
         assert len(pipeline.audit.trail) > 0
-        assert pipeline.audit.trail[0]["step"] == "handle_missing"
-        assert pipeline.audit.trail[1]["step"] == "handle_outliers"
+        assert pipeline.audit.trail[0]["step"] == "impute_simple"
+        assert pipeline.audit.trail[1]["step"] == "flag"
 
     def test_audit_trail_reset(self, sample_pipeline_steps, null_df):
         pipeline = Pipeline(steps=sample_pipeline_steps)
         pipeline.run(null_df)
-        first_run_count = len(pipeline.audit.trail) > 0
+        first_run_count = len(pipeline.audit.trail)
         pipeline.run(null_df)
         assert len(pipeline.audit.trail) == first_run_count
 

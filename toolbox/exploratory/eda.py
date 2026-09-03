@@ -75,7 +75,7 @@ def _print_console(eda_result):
         print(f"\n--- Comparison ---")
         print(f"  {comp['significance']['interpretation']}")
 
-def _export_html(eda_result, path):
+def _export_excel(eda_result, path):
     profile_result = eda_result["profile"]
     stats_result = eda_result["stats"]
 
@@ -146,7 +146,7 @@ def _export_html(eda_result, path):
     logger.info(f"EDA Excel report saved to {path}")
     
 
-def _export_excel(eda_result, path):
+def _export_html(eda_result, path):
     profile_result = eda_result["profile"]
     stats_result = eda_result["stats"]
 
@@ -269,7 +269,7 @@ def _export_excel(eda_result, path):
     </html>
     """
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(html)
 
     logger.info(f"EDA HTML report saved to {path}")

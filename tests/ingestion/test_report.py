@@ -1,4 +1,4 @@
-from toolbox.ingestion.report import report, _print_console, _export_html, _export_excel
+from toolbox.ingestion.report import generate_report, _print_console, _export_html, _export_excel
 import toolbox.ingestion.report as report_module
 from toolbox.ingestion import profiler as pf
 
@@ -91,21 +91,21 @@ class TestReport:
     def test_report_default_calls_console(self, profile_result, monkeypatch):
         called = []
         monkeypatch.setattr(report_module, "_print_console", lambda r: called.append("console"))
-        report(profile_result)
+        generate_report(profile_result)
         assert "console" in called
 
     def test_report_html_calls_export_html(self, profile_result, monkeypatch):
         called = []
         monkeypatch.setattr(report_module, "_export_html", lambda r, path=None: called.append("html"))
-        report(profile_result, output="html")
+        generate_report(profile_result, output="html")
         assert "html" in called
 
     def test_report_excel_calls_export_excel(self, profile_result, monkeypatch):
         called = []
         monkeypatch.setattr(report_module, "_export_excel", lambda r, path=None: called.append("excel"))
-        report(profile_result, output="excel")
+        generate_report(profile_result, output="excel")
         assert "excel" in called
 
     def test_unsupported_format_raises(self, profile_result):
         with pytest.raises(ValueError):
-            report(profile_result, output="pdf")
+            generate_report(profile_result, output="pdf")

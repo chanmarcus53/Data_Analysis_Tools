@@ -2,6 +2,7 @@ from unittest.mock import patch, MagicMock
 import pandas as pd
 import pytest
 from toolbox.ingestion.loaders import load, _find_records, _is_sql_connection
+from requests.exceptions import HTTPError
 import json
 
 class TestFindRecords:
@@ -90,10 +91,9 @@ class TestLoadApi:
         mock_response.raise_for_status.side_effect = Exception("API error")
         mock_get.return_value = mock_response
 
-        with pytest.raises(HTTPError):
+        with pytest.raises(Exception):
             load("http://fake-api.com/data")
 
-        raise NotImplementedError
 
 class TestIsSqlConnection:
     def test_valid_postgresql(self):

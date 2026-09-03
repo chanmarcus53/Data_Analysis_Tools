@@ -31,7 +31,7 @@ def _flag(df, column, audit=None):
     df = df.copy()
     new_col = f"{column}_missing"
     df[new_col] = df[column].isnull()
-    if audit:
+    if audit is not None:
         null_count = df[column].isnull().sum()
         audit.log("flag", column, f"Added flag column '{new_col}' — {null_count} nulls flagged")
     return df
@@ -48,7 +48,7 @@ def _drop(df, column, threshold=None, axis=0, audit=None):
         df = df.dropna(axis=axis, subset=[column] if axis == 0 else None)
 
     dropped = before - len(df)
-    if audit:
+    if audit is not None:
         audit.log("drop", column, f"Dropped {dropped} {'rows' if axis == 0 else 'columns'} "
                                    f"with {'>' + str(threshold * 100) + '%' if threshold else 'any'} nulls")
     return df
@@ -70,7 +70,7 @@ def _impute_simple(df, column, strategy, value=None, audit=None):
         impute_value = value
 
     df[column] = df[column].fillna(impute_value)
-    if audit:
+    if audit is not None:
         audit.log("impute_simple", column, f"Imputed {null_count} nulls with {strategy} value: {impute_value}")
     return df
 
@@ -81,7 +81,7 @@ def _impute_knn(df, column, n_neighbors=5, audit=None):
     imputer = KNNImputer(n_neighbors=n_neighbors)
     df_imputed = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
     df[column] = df_imputed[column]
-    if audit:
+    if audit is not None:
         audit.log("impute_knn", column, f"Imputed {null_count} nulls using KNN with n_neighbors={n_neighbors}")
     return df
 
@@ -90,7 +90,7 @@ def _impute_ffill(df, column, audit=None):
     df = df.copy()
     null_count = df[column].isnull().sum()
     df[column] = df[column].ffill()
-    if audit:
+    if audit is not None:
         audit.log("impute_ffill", column, f"Imputed {null_count} nulls using forward fill")
     return df
 
@@ -99,6 +99,6 @@ def _impute_bfill(df, column, audit=None):
     df = df.copy()
     null_count = df[column].isnull().sum()
     df[column] = df[column].bfill()
-    if audit:
+    if audit is not None:
         audit.log("impute_bfill", column, f"Imputed {null_count} nulls using backward fill")
     return df

@@ -4,7 +4,7 @@ import pandas as pd
 
 logger = get_logger(__name__)
 
-def report(profile_result, output=None):
+def generate_report(profile_result, output=None):
     """
     Sends a report about the data ingestion to the user
 
@@ -130,7 +130,7 @@ def _export_html(profile_result, path="report.html"):
             </body>
             </html>
             """
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(html)
 
         logger.info(f"HTML report saved to {path}")

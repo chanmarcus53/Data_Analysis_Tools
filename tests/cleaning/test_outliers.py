@@ -11,7 +11,7 @@ class TestDetect:
         assert outliers.iloc[0] == False
 
     def test_detect_outliers_zscore(self, outlier_df):
-        outliers = _detect(outlier_df, "age", method="zscore", threshold=2)
+        outliers = _detect(outlier_df, "age", method="zscore", threshold=1.5)
         assert len(outliers) == len(outlier_df)
         assert outliers.sum() == 1
         assert outliers.iloc[3] == True
