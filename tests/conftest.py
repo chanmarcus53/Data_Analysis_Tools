@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from toolbox.cleaning.audit import AuditTrail
 
 @pytest.fixture
 def clean_df():
@@ -38,3 +39,7 @@ def sample_schema():
         "non_nullable": ["id"],
         "value_sets": {"status": ["active", "inactive"]}
     }
+
+@pytest.fixture
+def audit_trail():
+    return AuditTrail()
