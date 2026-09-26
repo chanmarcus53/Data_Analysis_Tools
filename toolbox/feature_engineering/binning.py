@@ -11,7 +11,8 @@ def bin(df, column, method, n_bins=1, audit=None, **kwargs):
     elif method == "equal_frequency":
         return _equal_frequency(df, column, n_bins, audit=audit, **kwargs)
     elif method == "custom_bins":
-        return _custom_bins(df, column, bins=kwargs.get("bins"), audit=audit, **kwargs)
+        bins = kwargs.pop("bins", None)
+        return _custom_bins(df, column, bins=bins, audit=audit, **kwargs)
     else:
         raise ValueError(f"Unknown binning method: {method}")
 

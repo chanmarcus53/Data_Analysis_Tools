@@ -58,7 +58,7 @@ def _detect_task(series):
     if series.dtype == "object" or series.dtype.name == "category":
         return "classification"
     if series.dtype.kind in "biufc":
-        return "classification" if series.nunique() < 20 else "regression"
+        return "classification" if series.nunique() < 10 else "regression"
     return "classification"  # default fallback
 
     
@@ -71,11 +71,11 @@ def _random_forest_importance(df, target, task):
         raise ValueError("No numeric features found for random forest importance")
 
     if task == "classification":
-        forest = RandomForestClassifier(n_estimators=100, random_state=42)
+        forest = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=2)
     else:
-        forest = RandomForestRegressor(n_estimators=100, random_state=42)
+        forest = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=2)
 
-    forest.fit(X, y, n_jobs=2)
+    forest.fit(X, y)
     logger.debug(f"Random forest fitted with {X.shape[1]} features")
 
     importance_df = pd.DataFrame({
@@ -101,6 +101,10 @@ def _correlation_importance(df, target):
     if X.empty:
         raise ValueError("No numeric features found for correlation importance")
     corr = X.corrwith(y).abs().sort_values(ascending=False)
+    corr = corr.fillna(0)
+
+    logger.debug(f"Correlation importance computed for {len(X.columns)} features")
+    
     importance_df = pd.DataFrame({
         "feature": corr.index,
         "importance": corr.values

@@ -49,11 +49,14 @@ def extract_datetime_features(df, column, features=None, audit=None, date_format
         else:
             logger.warning(f"Unknown feature '{feature}' — skipping")
 
+    if audit is not None:
+        audit.log("datetime_extraction", column, f"Datetime: {features} extracted")
+
     return df
 
 def _extract_basic(df, column, feature):
     # extracts a single basic feature — year, month, day etc.
-    df.copy()
+    df = df.copy()
     if feature == "year":
         df[f"{column}_year"] = df[column].dt.year
     elif feature == "month":

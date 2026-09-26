@@ -42,9 +42,9 @@ class TestOneHotEncode:
 
     def test_onehot_encode_drop_first(self, encoding_df):
         result = _onehot_encode(encoding_df, "color", drop_first=True)
-        assert "color_red" not in result.columns
-        assert "color_blue" in result.columns
+        assert "color_blue" not in result.columns
         assert "color_green" in result.columns
+        assert "color_red" in result.columns
 
     def test_onehot_keeps_original_when_drop_original_false(self, encoding_df):
         result = _onehot_encode(encoding_df, "color", drop_original=False)
@@ -80,7 +80,7 @@ class TestTargetEncode:
             _target_encode(encoding_df, "size", target=None)
 
     def test_logs_to_audit(self, encoding_df, audit_trail):
-        _target_encode(encoding_df, "size", audit=audit_trail)
+        _target_encode(encoding_df, "size", target="price", audit=audit_trail)
         assert len(audit_trail) == 1
         assert audit_trail.trail[0]["step"] == "target_encode"
         assert audit_trail.trail[0]["column"] == "size"

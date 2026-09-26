@@ -29,7 +29,8 @@ def datetime_df():
 def importance_df():
     return pd.DataFrame({
         "feature_a": [1,2,3,4,5,6,7,8,9,10],
-        "feature_b": [10,9,8,7,6,5,4,3,2,1],
+        "feature_b": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         "feature_c": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
-        "target": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+        "feature_d": ["Adam", "Adam", "Baley", "Baley", "Carter", "Carter", "David", "David", "Eunice", "Eunice"],
+        "target": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20],  
     })
