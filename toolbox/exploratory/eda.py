@@ -7,6 +7,17 @@ import pandas as pd
 logger = get_logger(__name__)
 
 def run_eda(df, output=None, path=None, compare_by=None, compare_periods=None):
+    """
+    Runs Exploratory Data Analysis(eda) via profiling, getting stats and comparisons
+    then prints the results to the chosen formats
+
+    Input
+    df - Dataframe
+    output - types of formatting [html, excel, None]
+    path - location to store the results
+    compare_by - column to use for comparison cannot be used with compare_periods
+    compare_periods - list of periods for comparison
+    """
     # entry point — orchestrates full EDA pipeline
     # calls profiler, stats, and comparison
     # outputs to console, HTML, or Excel
@@ -27,6 +38,14 @@ def run_eda(df, output=None, path=None, compare_by=None, compare_periods=None):
 
 
 def _collect_results(df, compare_by=None, compare_periods=None):
+    """
+    Runs  profiling, getting stats and comparisons
+
+    Input
+    df - Dataframe
+    compare_by - column to use for comparison cannot be used with compare_periods
+    compare_periods - list of periods for comparison
+    """
     # gathers all results into one dict
     # profile_result, stats_result, comparison_result
     result = {
@@ -42,6 +61,12 @@ def _collect_results(df, compare_by=None, compare_periods=None):
     return result
 
 def _print_console(eda_result):
+    """
+    Prints result from _collect_results to the console
+
+    Input
+    eda_result - result from _collect_results
+    """
     print("=========== EDA Report ===========")
     
     # profile section
@@ -76,6 +101,13 @@ def _print_console(eda_result):
         print(f"  {comp['significance']['interpretation']}")
 
 def _export_excel(eda_result, path):
+    """
+    Exports result from _collect_results to an excel file
+
+    Input
+    eda_result - result from _collect_results
+    path - file path to store file
+    """
     profile_result = eda_result["profile"]
     stats_result = eda_result["stats"]
 
@@ -147,6 +179,13 @@ def _export_excel(eda_result, path):
     
 
 def _export_html(eda_result, path):
+    """
+    Exports result from _collect_results to an html file
+
+    Input
+    eda_result - result from _collect_results
+    path - file path to store file
+    """
     profile_result = eda_result["profile"]
     stats_result = eda_result["stats"]
 

@@ -5,6 +5,8 @@ logger = get_logger(__name__)
 def profile(df):
     """
     Return a dict summarising the DataFrame.
+
+    df - Dataframe
     """
     logger.info(f"Starting profile: {df.shape[0]} rows, {df.shape[1]} columns")
     column_profiles = _profile_columns(df)
@@ -22,8 +24,8 @@ def _get_shape(df):
     """
     Return the row count and columns count
 
-    Parameters:
-    - df : Pandas Dataframe
+    Input
+    df - Dataframe
 
     Returns:
     - df.shape[0]: row count
@@ -35,8 +37,8 @@ def _get_memory(df):
     """
     Returns memory usage of the dataframe in megabytes
 
-    Parameters:
-    - df: Pandas Dataframe
+    Input
+    df - Pandas Dataframe
 
     Returns:
     - memory: Floating point, 3 decimal places
@@ -47,7 +49,9 @@ def _profile_columns(df):
     """
     Return a per-column summary. Numeric and categorical columns
     need different treatment.
-    hint: df.select_dtypes() will be useful here
+    
+    Input
+    df - Pandas Dataframe
     """
     numeric_df = df.select_dtypes(include=['number'])
     categorical_df = df.select_dtypes(include=['object', 'category'])
@@ -66,8 +70,8 @@ def _profile_numeric(series):
     """
     Returns a dictionary of an overview of the numerical column
 
-    Parameters:
-    - series: Pandas series from a part of a dataframe
+    Input
+    series - Pandas series from a part of a dataframe
 
     Returns:
     - dict: series stats
@@ -85,6 +89,12 @@ def _profile_numeric(series):
     }
 
 def _profile_categorical(series):
+    """
+    Get a rough overall view of a column from a Pandas Dataframe
+
+    Input
+    series - Pandas series from a part of a dataframe
+    """
     return {
         "dtype": str(series.dtype),
         "count": int(series.count()),
@@ -98,6 +108,10 @@ def _detect_issues(df, column_profile):
     """
     Return a list of warning strings for common data quality problems.
     Things to flag: high null %, single-value columns, likely duplicates
+
+    Input
+    df - Dataframe
+    column_profile - output from _profile_columns function
     """
     issue_list = []
     for key, value in column_profile.items():

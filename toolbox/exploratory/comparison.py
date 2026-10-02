@@ -14,6 +14,14 @@ def compare(df, column, by=None, period_col=None, period_a=None, period_b=None):
     Time period comparison example:
         compare(df, column="age", period_col="quarter", 
                 period_a="Q1", period_b="Q2")
+
+    Input
+    df - Dataframe
+    column - Column for data analysis
+    by - column for grouped by comparison
+    period_col - column for time period comparison
+    period_a - Starting time for period_col comparison
+    period_b - Ending time for period_col comparison
     """
     if by is not None and period_col is not None:
         raise ValueError("Pass either 'by' for group comparison or 'period_col' for time comparison, not both.")
@@ -29,6 +37,11 @@ def compare(df, column, by=None, period_col=None, period_a=None, period_b=None):
 def _compare_groups(df, column, by):
     """
     Compare distributions between all groups in a categorical column.
+
+    Input
+    df - Dataframe
+    column - column being compared
+    by - groupby column
     """
     unique_groups = df[by].unique()
     logger.info(f"Comparing '{column}' across {len(unique_groups)} groups in '{by}'")
@@ -62,10 +75,14 @@ def _compare_groups(df, column, by):
 def _compare_periods(df, column, period_col, period_a, period_b):
     """
     Compare distributions between two time periods.
+
+    Input
+    df - Dataframe
+    column - column for comparison
+    period_col - column for time period comparison
+    period_a - Starting time for period_col comparison
+    period_b - Ending time for period_col comparison
     """
-    # TODO: validate that period_a and period_b exist in period_col
-    # hint: what should happen if they don't?
-    
     if period_a not in df[period_col].values:
         raise ValueError(f"Period '{period_a}' not found in column '{period_col}'")
     if period_b not in df[period_col].values:
@@ -112,6 +129,10 @@ def _test_significance(*groups, group_names=None):
     Automatically selects and runs the right significance test.
     2 groups → t-test or Mann-Whitney
     3+ groups → ANOVA or Kruskal-Wallis
+
+    Input
+    groups - multiple dataframe with no null values
+    group_names - matching number of groups to assign labels to groups
     """
     if group_names is None:
         group_names = [f"group_{i}" for i in range(len(groups))]
@@ -138,8 +159,6 @@ def _test_significance(*groups, group_names=None):
 
     significant = bool(p_value < 0.05)
 
-    # TODO: write a plain English interpretation for each test type
-    # hint: mention the test used, number of groups, p_value, and whether significant
     interpretation = _interpret(test_used, group_names, p_value, significant)
 
     logger.info(f"Significance test: {test_used}, p={p_value:.4f}, significant={significant}")
@@ -156,6 +175,12 @@ def _test_significance(*groups, group_names=None):
 def _interpret(test_used, group_names, p_value, significant):
     """
     Returns a plain English interpretation of the significance test result.
+
+    Input
+    test_used - [t-test, mann-whitney]
+    group_names - names of groups
+    p_value - probabilty of significance
+    significant - bool value whether result is significant or not
     """
     if test_used in ["t-test", "mann-whitney"]:
         message = f"Comparing two groups: {group_names[0]} and {group_names[1]}.\n"
@@ -177,6 +202,8 @@ def _check_normality(series):
     """
     Shapiro-Wilk for n < 5000, normaltest for larger samples.
     Returns True if normal, False if not.
+
+    series - pandas series or column of dataframe
     """
     series = series.dropna()
 

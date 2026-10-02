@@ -9,12 +9,24 @@ VALID_STEPS = ["handle_missing", "handle_outliers"]
 
 class Pipeline:
     def __init__(self, steps=None):
+        """
+        Initializes Pipeline
+
+        Input
+        steps - initial transformation steps
+        """
         self.steps = []
         self.audit = AuditTrail()
         for step in (steps or []):
             self.add_step(step)
 
     def run(self, df):
+        """
+        Running through added steps from the pipeline to produce a completed and cleaned dataframe for further processing
+
+        Input
+        df - Dataframe for data analysis
+        """
         self.audit.clear()
         logger.info(f"Pipeline starting — {len(self.steps)} steps to apply")
 
@@ -34,6 +46,12 @@ class Pipeline:
         return df
 
     def add_step(self, step):
+        """
+        Adds steps to the Pipeline
+
+        Input
+        step - complete instructional parcel contains "step", and "column"
+        """
         if "step" not in step:
             raise ValueError("Each step must have a 'step' key")
         if "column" not in step:
@@ -44,6 +62,10 @@ class Pipeline:
         logger.debug(f"Step added: {step['step']} on column '{step['column']}'")
 
     def summary(self):
+        """
+        Outputs a summary of Pipeline Steps
+        Then call a summary of the Audit Trail
+        """
         print("----------- Pipeline Steps -------------------")
         if not self.steps:
             print("No steps defined.")

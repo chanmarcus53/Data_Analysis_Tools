@@ -4,6 +4,18 @@ import pandas as pd
 logger = get_logger(__name__)
 
 def encode(df, column, method, audit=None, **kwargs):
+    """
+    Encode a dataframe column based on ordinal, onehot or target methods of encoding
+
+    Input
+    df - Dataframe
+    column - categorical column speficied for encoding
+    method - [ordinal, onehot, target]
+    audit - audit trail
+
+    Kwargs
+    order - (used for ordinal) list of values in specified column ["small", "medium", "large] => [1,2,3]
+    """
     if method == "ordinal":
         return _ordinal_encode(df, column, order=kwargs.get("order"), audit=audit)
     elif method == "onehot":
@@ -17,6 +29,15 @@ def encode(df, column, method, audit=None, **kwargs):
         raise ValueError (f"Unknown encoding method: {method} Choose from: ordinal, onehot, target")
 
 def _ordinal_encode(df, column, order=None, audit=None):
+    """
+    Encode categories as intergers in a specified order
+
+    Input
+    df - Dataframe
+    column - column for encoding
+    order - list of column values for encoding
+    audit - audit trail
+    """
     # encode categories as integers in a specified order
     # hint: look into sklearn OrdinalEncoder or pandas Categorical
     if order is None:
@@ -35,6 +56,16 @@ def _ordinal_encode(df, column, order=None, audit=None):
     return df
 
 def _onehot_encode(df, column, drop_first=False, drop_original=True, audit=None):
+    """
+    Creates binary columns for every unique value in specified column
+
+    Input
+    df - Dataframe
+    column - column for encoding
+    drop_first - (bool) Drop first unique values
+    drop_original - (bool) Drop the original column
+    audit - audit trail
+    """
     # create binary columns for each category
     # hint: look into pd.get_dummies()
     df = df.copy()
@@ -49,6 +80,16 @@ def _onehot_encode(df, column, drop_first=False, drop_original=True, audit=None)
     return df
 
 def _target_encode(df, column, target, audit=None):
+    """
+    Replaces category with the mean of the target variable per category
+    Useful for grouping values together for encoding
+
+    Input
+    df - Dataframe
+    column - column for encoding
+    target - column with high cardinality (many unique values)
+    audit - audit trail
+    """
     # replace category with mean of target variable per category
     # useful for high cardinality columns
     if target is None:

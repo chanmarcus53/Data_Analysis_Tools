@@ -10,10 +10,12 @@ def rank_features(df, target, method="auto", audit=None):
     """
     Entry point — ranks features by importance.
     
-    method: "auto", "random_forest", "correlation", "mutual_information"
-    
-    "auto" detects whether target is continuous or categorical
-    and picks the most appropriate method.
+    Input
+    df - Dataframe
+    target - target column to measure importance
+    method - [auto, random_forest, correlation, mutual_information]
+        - "auto" detects whether target is continuous or categorical
+            and picks the most appropriate method.
     
     Returns a DataFrame sorted by importance score descending.
     
@@ -51,9 +53,9 @@ def rank_features(df, target, method="auto", audit=None):
 def _detect_task(series):
     """
     Detects whether the target is classification or regression.
-    hint: if the target is numeric with many unique values → regression
-          if categorical or few unique values → classification
-    think about what threshold of unique values makes sense
+    
+    Input
+    series - dataframe column to classify
     """
     if series.dtype == "object" or series.dtype.name == "category":
         return "classification"
@@ -63,6 +65,14 @@ def _detect_task(series):
 
     
 def _random_forest_importance(df, target, task):
+    """
+    Creates feature importances using a random forest classifier and reading teh results
+
+    Input
+    df - Dataframe
+    target - column used for prediction
+    task - [classification, regression] different types of random forest dependent on the dataframe
+    """
     df = df.copy()
     X = df.drop(columns=[target]).select_dtypes(include="number")
     y = df[target]
@@ -92,7 +102,10 @@ def _correlation_importance(df, target):
     Uses absolute correlation with target as importance score.
     Only works for numeric features.
     Returns a DataFrame with columns: feature, importance
-    hint: df.corrwith()
+    
+    Input
+    df - Dataframe
+    target - column used for prediction
     """
     df = df.copy()
     X = df.drop(columns=[target]).select_dtypes(include="number")
@@ -116,6 +129,14 @@ def _correlation_importance(df, target):
 def _mutual_information(df, target, task):
     # uses sklearn mutual_info_regression or mutual_info_classif
     # captures non-linear relationships too
+    """
+    Measures the dependency between each feature in a feature matrix (X) and a discrete target vector (y)
+
+    Input
+    df - Dataframe
+    target - column used for prediction (y)
+    task - [classification , regression]
+    """
     df = df.copy()
     X = df.drop(columns=[target]).select_dtypes(include="number")
     y = df[target]

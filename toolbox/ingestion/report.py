@@ -8,8 +8,8 @@ def generate_report(profile_result, output=None):
     """
     Sends a report about the data ingestion to the user
 
-    Parameters:
-    profile_result: dict from profiler.py
+    Input
+    profile_result: dict from profiler.py _
 
     Return:
     output=None prints to console.
@@ -26,8 +26,13 @@ def generate_report(profile_result, output=None):
 
 
 def _print_console(profile_result):
-    # TODO: print a readable summary — think about what a person
-    # actually needs to see first when they load a new dataset
+    """
+    Prints out results from profile function from profiler.py _profile_columns, _profile_numeric, _profile_categorical
+    to the console
+
+    Input
+    profile_result - output from _profile_columns, _profile_numeric, or _profile_categorical
+    """
     print("----------- Ingestion Summary -------------------")
     print(f" Memory: {profile_result['memory']}MB Ingested ")
     print(f" Data Shape: {profile_result['shape'][0]} X {profile_result['shape'][1]}")
@@ -59,6 +64,14 @@ def _print_console(profile_result):
     print()
 
 def _export_html(profile_result, path="report.html"):
+    """
+    Exports results from profile function from profiler.py _profile_columns, _profile_numeric, _profile_categorical
+    to a html file
+
+    Input
+    profile_result - output from _profile_columns, _profile_numeric, or _profile_categorical
+    path - filepath with desired filename included (.html)
+    """
     rows = ""
     for col_name, value in profile_result["columns"].items():
         if "mean" in value:
@@ -136,6 +149,14 @@ def _export_html(profile_result, path="report.html"):
         logger.info(f"HTML report saved to {path}")
 
 def _export_excel(profile_result, path="report.xlsx"):
+    """
+    Exports results from profile function from profiler.py _profile_columns, _profile_numeric, _profile_categorical
+    to a excel file
+
+    Input
+    profile_result - output from _profile_columns, _profile_numeric, or _profile_categorical
+    path - filepath with desired filename included (.xlsx)
+    """
     col = profile_result["columns"]
 
     overview_df = pd.DataFrame([{

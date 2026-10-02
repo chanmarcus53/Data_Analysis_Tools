@@ -27,8 +27,8 @@ def load(source, **kwargs):
     Unified entry point. Detects source type and dispatches accordingly.
     Returns a pandas DataFrame.
 
-    Parameters:
-        - source: source of data, either as sql connection string, api url or file.
+    Input
+    source - source of data, either as sql connection string, api url or file.
 
     Reponses:
         - Returns a dataframe based on data source.
@@ -67,11 +67,11 @@ def _load_sql(connection, query, params=None, chunksize=None, **kwargs):
     """
     Execute a SQL query against a connection and return results as a DataFrame.
     
-    Paramerters:
-        - connection: SQLAlchemy connection string
-        - query:      SQL query string, use :param_name style placeholders
-        - params:     dict of query parameters e.g. {"user_id": 42, "status": "active"}
-        - chunksize:  if set, fetches in chunks and concatenates — useful for large results
+    Input
+    connection - SQLAlchemy connection string
+    query - SQL query string, use :param_name style placeholders
+    params - dict of query parameters e.g. {"user_id": 42, "status": "active"}
+    chunksize - if set, fetches in chunks and concatenates — useful for large results
     
     Example:
         _load_sql(conn, "SELECT * FROM users WHERE id = :user_id", params={"user_id": 42})
@@ -135,6 +135,12 @@ def _load_sql(connection, query, params=None, chunksize=None, **kwargs):
 
 
 def _find_records(data):
+    """
+    Finds relevant data from external sources such as APIs or JSON formats
+
+    Input
+    data - JSON or APIs response
+    """
     for key in COMMON_KEYS:
         if key in data:
             value = data[key]
@@ -158,6 +164,12 @@ def _find_records(data):
 def _paginate_offset(url, params=None, headers=None, max_pages=50):
     """
     Keeps fetching pages until the API returns an empty list.
+
+    Input
+    url - API url
+    params - html params (for different pages)
+    headers - defined metadata (user agent, authorization, accept)
+    max_pages - maximum number of pages to collect data from
     """
     params = params or {}
     all_records = []
@@ -189,6 +201,12 @@ def _paginate_offset(url, params=None, headers=None, max_pages=50):
 def _paginate_cursor(url, params=None, headers=None, cursor_key="next_cursor"):
     """
     Follows cursor tokens until the API signals there are no more pages.
+
+    Input
+    url - API url
+    params - html params (for different pages)
+    headers - defined metadata (user agent, authorization, accept)
+    cursor_key - html element to move to the next page
     """
     params = params or {}
     all_records = []
@@ -217,6 +235,12 @@ def _paginate_link_header(url, params=None, headers=None, max_pages=50):
     """
     Follows 'Link' headers until there is no 'next' relation.
     GitHub's API is a good real-world example of this pattern.
+
+    Input
+    url - API url
+    params - html params (for different pages)
+    headers - defined metadata (user agent, authorization, accept)
+    max_pages - maximum number of pages to collect data from
     """
     all_records = []
 
@@ -255,6 +279,14 @@ def _paginate_link_header(url, params=None, headers=None, max_pages=50):
 def _load_api(url, params=None, headers=None, pagination=None, cursor_key="next_cursor", max_pages=50, **kwargs):
     """
     pagination options: None, "offset", "cursor", "link"
+
+    Input 
+    url - API url
+    params - html params (for different pages)
+    headers - defined metadata (user agent, authorization, accept)
+    pagination - [offset, None, cursor, link]
+    cursor_key - html element to move to the next page
+    max_pages - maximum number of pages to collect data from
     """
  
     if pagination == "offset":
@@ -280,6 +312,8 @@ def _load_api(url, params=None, headers=None, pagination=None, cursor_key="next_
 def _is_sql_connection(source):
     """
     Return True if source looks like a SQL connection string or SQLAlchemy engine.
-    hint: what types or string patterns would indicate a DB connection?
+
+    Input 
+    source - sql connection string
     """
     return isinstance(source, str) and "://" in source and not source.startswith("http")

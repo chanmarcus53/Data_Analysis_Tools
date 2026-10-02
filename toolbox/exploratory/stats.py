@@ -4,6 +4,12 @@ import pandas as pd
 logger = get_logger(__name__)
 
 def summarise(df):
+    """
+    Collect a summary of the dataframe with correlation matrices
+
+    Input
+    df - Dataframe
+    """
     logger.info(f"Running stats summary on DataFrame with shape {df.shape}")
     skewness, kurtosis = _skewness_kurtosis(df)
     result = {
@@ -21,6 +27,12 @@ def summarise(df):
     return result
 
 def _skewness_kurtosis(df):
+    """
+    Calculate the skewness and kurtosis of the dataframe
+
+    Input
+    df - Dataframe
+    """
     numeric_df = df.select_dtypes(include="number")
     skewness = {}
     kurtosis = {}
@@ -30,6 +42,13 @@ def _skewness_kurtosis(df):
     return skewness, kurtosis
 
 def _correlation_matrix(df, method):
+    """
+    Creates a correlation matrix based on the numeric columns in the dataframe
+
+    Input
+    df - Dataframe
+    method = [pearson, spearman, kendall] methods of creating the correlation matrix
+    """
     if method.lower() not in ["pearson", "spearman", "kendall"]:
         raise ValueError(f"Invalid method: '{method}'. Choose from 'pearson', 'spearman', 'kendall'.")
     result = df.corr(method=method.lower(), numeric_only=True)
@@ -37,11 +56,23 @@ def _correlation_matrix(df, method):
     return result.to_dict()
 
 def _value_counts(df):
+    """
+    Groups objects and counts how many fit within that group
+
+    Input
+    df - Dataframe
+    """
     categorical_col = df.select_dtypes(include=["object", "category"])
     return {col: categorical_col[col].value_counts().to_dict()
             for col in categorical_col.columns}
 
 def _percentiles(df):
+    """
+    Outputs a dictionary what show fixed percentiles within that numeric column of the dataframe
+
+    Input
+    df - Dataframe
+    """
     percentiles = [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
     result = df.quantile(percentiles, numeric_only=True)
     return result.to_dict()

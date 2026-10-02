@@ -7,6 +7,10 @@ def validate(df, schema=None):
     Run all validation checks and return a report dict.
     Should never hard crash — capture failures as results.
 
+    Input:
+    df - Pandas dataframe
+    schema - Dataframe column descriptions
+
     schema example:
     {
         "columns": ["id", "name", "date"],
@@ -35,10 +39,11 @@ def validate(df, schema=None):
 def _check_columns(df, expected_columns, results):
     """
     Check if all expected columns are present and if there are any extra columns.
-    Parameters:
-    - df: pandas DataFrame to validate
-    - expected_columns: list of column names that are expected to be in the DataFrame
-    - results: dict to store validation results (passed, warnings, failed)
+
+    Input
+    df - pandas DataFrame to validate
+    expected_columns - list of column names that are expected to be in the DataFrame
+    results - dict to store validation results (passed, warnings, failed)
 
     Returns:
     - list of missing columns or extra columns
@@ -59,6 +64,18 @@ def _check_columns(df, expected_columns, results):
         logger.info("All expected columns are present, no extras.")
 
 def _check_dtypes(df, expected_dtypes, results):
+    """
+    Check dataframe columns matching column name to their dtype.
+
+    Input
+    df - pandas DataFrame to validate
+    expected_dtypes - dictionary of column names to dtypes
+    results - dict to store validation results (passed, warnings, failed)
+
+    Returns:
+    - list pass/fail corresponding to columns in expected_dtypes
+    - messages for column issues are added to results dict
+    """
     column_types = df.dtypes.apply(lambda x: x.name).to_dict()
     for col, expected_dtype in expected_dtypes.items():
         actual_dtype = column_types.get(col)
@@ -76,6 +93,18 @@ def _check_dtypes(df, expected_dtypes, results):
             logger.info(msg)
 
 def _check_nulls(df, non_nullable, results):
+    """
+    Check dataframe essential columns for null values.
+
+    Input
+    df - pandas DataFrame to validate
+    non_nullable - list of columns that must have no null values
+    results - dict to store validation results (passed, warnings, failed)
+
+    Returns:
+    - list pass/fail statuses for columns in non_nullable
+    - messages for column issues are added to results dict
+    """
     for col in non_nullable:
         if col not in df.columns:
             msg = f"Column '{col}' is missing, cannot check for nulls."
@@ -91,6 +120,18 @@ def _check_nulls(df, non_nullable, results):
             logger.info(msg)
 
 def _check_value_sets(df, value_sets, results):
+    """
+    Check dataframe columns for values outside of possible values (categorical)
+
+    Input
+    df - pandas DataFrame to validate
+    value_sets - dictionary of column value and allowed values eg. {column_value: [value1, value2]}
+    results - dict to store validation results (passed, warnings, failed)
+
+    Returns:
+    - list pass/fail statuses for columns with allowable values
+    - messages for column issues are added to results dict
+    """
     for col, allowed_values in value_sets.items():
         if col not in df.columns:
             msg = f"Column '{col}' is missing, cannot check value set."

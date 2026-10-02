@@ -11,7 +11,6 @@ def sample_api_response():
         ]
     }
 
-
 @pytest.fixture
 def high_null_df():
     """DataFrame with high null percentage for testing issue detection"""

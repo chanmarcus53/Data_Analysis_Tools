@@ -6,6 +6,22 @@ import pandas as pd
 logger = get_logger(__name__)
 
 def handle_missing(df, column, strategy, audit=None, **kwargs):
+    """
+    Handles missing values in specified columns in the dataframe
+
+    Input:
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    strategy - the method we choose to fill the null values with
+        - flag - flag the error
+        - drop - drop the column or row
+        - [mean, median, mode, contant] as a replacement
+        - knn - grouped filled
+        - ffill - foward fill with value just before this missing value (time series)
+        - bfill - back fill with the value just after this missing value (time series)
+    audit - Audit Trail for logging
+    """
+
     if audit is None:
         audit = AuditTrail()
 
@@ -28,6 +44,14 @@ def handle_missing(df, column, strategy, audit=None, **kwargs):
 
 
 def _flag(df, column, audit=None):
+    """
+    Flagging the Null values
+
+    Input:
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    audit - Audit Trail for logging
+    """
     df = df.copy()
     new_col = f"{column}_missing"
     df[new_col] = df[column].isnull()
@@ -38,6 +62,16 @@ def _flag(df, column, audit=None):
 
 
 def _drop(df, column, threshold=None, axis=0, audit=None):
+    """
+    Dropping the null values
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    threshold - certain percentage of null values before dropping eg. 0.5 = %50
+    axis - controls to drop column or row, (1 = column, 0 = row)
+    audit - Audit Trail for logging
+    """
     df = df.copy()
     before = len(df)
 
@@ -55,6 +89,17 @@ def _drop(df, column, threshold=None, axis=0, audit=None):
 
 
 def _impute_simple(df, column, strategy, value=None, audit=None):
+    """
+    Simple imputation via contant
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    strategy - [mean, median, mode, contant]
+        - if using constant must set it via value
+    value - set replacement in constant strategy
+    audit - Audit Trail for logging
+    """
     df = df.copy()
     null_count = df[column].isnull().sum()
 
@@ -76,6 +121,15 @@ def _impute_simple(df, column, strategy, value=None, audit=None):
 
 
 def _impute_knn(df, column, n_neighbors=5, audit=None):
+    """
+    Imputation though KNNeighbors
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    n_neighbors - Number of groups in the data there are supposed to be
+    audit - Audit Trail for logging
+    """
     df = df.copy()
     null_count = df[column].isnull().sum()
     imputer = KNNImputer(n_neighbors=n_neighbors)
@@ -87,6 +141,14 @@ def _impute_knn(df, column, n_neighbors=5, audit=None):
 
 
 def _impute_ffill(df, column, audit=None):
+    """
+    Imputation though forward filling
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    audit - Audit Trail for logging
+    """
     df = df.copy()
     null_count = df[column].isnull().sum()
     df[column] = df[column].ffill()
@@ -96,6 +158,14 @@ def _impute_ffill(df, column, audit=None):
 
 
 def _impute_bfill(df, column, audit=None):
+    """
+    Imputation though backward filling
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    audit - Audit Trail for logging
+    """
     df = df.copy()
     null_count = df[column].isnull().sum()
     df[column] = df[column].bfill()

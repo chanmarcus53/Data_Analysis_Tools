@@ -6,6 +6,16 @@ import pandas as pd
 logger = get_logger(__name__)
 
 def handle_outliers(df, column, method, action, audit=None, **kwargs):
+    """
+    Handles outliers and how to handle them through just flagging them, capping the values, or removing them
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    method - How to determine the outlier [iqr, z-score]
+    actions - How to handle outlier [flag, cap, remove]
+    audit - Audit Trail for logging
+    """
     if audit is None:
         audit = AuditTrail()
 
@@ -28,6 +38,15 @@ def handle_outliers(df, column, method, action, audit=None, **kwargs):
 
 
 def _detect(df, column, method, **kwargs):
+    """
+    Detects Outliers via either z-score method or IQR method
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    method - [z-score, IQR]
+        - threshold - used for z-score to determine cutoff
+    """
     if method == "iqr":
         Q1 = df[column].quantile(0.25)
         Q3 = df[column].quantile(0.75)
@@ -46,6 +65,14 @@ def _detect(df, column, method, **kwargs):
 
 
 def _flag(df, column, mask, audit=None):
+    """
+    Flags outliers identified in the mask (gained from the _detect function)
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    mask - determinator of outliers from _detect function
+    """
     df = df.copy()
     df[f"{column}_outlier"] = mask
     if audit is not None:
@@ -54,6 +81,14 @@ def _flag(df, column, mask, audit=None):
 
 
 def _cap(df, column, mask, method, audit=None, **kwargs):
+    """
+    Caps outliers to an upper and lower bound, identified in the mask (gained from the _detect function)
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    mask - determinator of outliers from _detect function
+    """
     df = df.copy()
 
     if method == "iqr":
@@ -75,6 +110,14 @@ def _cap(df, column, mask, method, audit=None, **kwargs):
 
 
 def _remove(df, column, mask, audit=None):
+    """
+    Deletes outliers identified in the mask (gained from the _detect function)
+
+    Input
+    df - the dataframe we are operating on
+    column - the column in the dataframe we are operative on
+    mask - determinator of outliers from _detect function
+    """
     df = df.copy()
     removed_count = mask.sum()
     df = df[~mask]

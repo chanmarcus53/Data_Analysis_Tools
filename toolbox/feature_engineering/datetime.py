@@ -55,7 +55,14 @@ def extract_datetime_features(df, column, features=None, audit=None, date_format
     return df
 
 def _extract_basic(df, column, feature):
-    # extracts a single basic feature — year, month, day etc.
+    """
+    Extracts a single basic feature — year, month, day etc.
+
+    Input
+    df - Dataframe
+    column - column with date values
+    feature - [year, month, date]
+    """
     df = df.copy()
     if feature == "year":
         df[f"{column}_year"] = df[column].dt.year
@@ -68,8 +75,17 @@ def _extract_basic(df, column, feature):
     return df
 
 def _extract_lag(df, column, lag_periods, audit=None):
+    """
+    Creates lag features in another column in the dataframe
+    The lag is based on the dataframe rows and not the lag based on the units for the columns
+
+    Input
+    df - Dataframe
+    column - column to create lag
+    lag_periods - list of lags desired for creation
+    audit - audit trail
+    """
     # creates lag features — value from n periods ago
-    # hint: look into series.shift()
     df = df.copy()
     for lag in lag_periods:
         df[f"{column}_lag_{lag}"] = df[column].shift(lag)
@@ -79,6 +95,14 @@ def _extract_lag(df, column, lag_periods, audit=None):
     return df
 
 def _extract_seasonality(df, column, audit=None):
+    """
+    Determines quarter and whether the date is a weekend
+
+    Input
+    df - Dataframe
+    column - column with datetime
+    audit - audit trail
+    """
     # creates features for seasonality — quarter, is_weekend etc.
     df = df.copy()
     df[f"{column}_quarter"] = df[column].dt.quarter
